@@ -14,12 +14,20 @@ Page({
       { name: '美食', icon: '🍜' },
       { name: '运动', icon: '🏃' },
       { name: '心情', icon: '😊' },
+      { name: '恋爱', icon: '💕' },
       { name: '其他', icon: '📌' }
     ],
-    selectedTag: ''
+    selectedTag: '',
+    selectedTagIndex: -1
   },
 
   onLoad(options) {
+    const tags = this.data.tags;
+    const getTagWithIcon = (tagName) => {
+      const tag = tags.find(t => t.name === tagName);
+      return tag ? tag.icon + ' ' + tag.name : '';
+    };
+
     // 检查是否是编辑模式
     const editNote = wx.getStorageSync('editNote');
     if (editNote && options.edit === '1') {
@@ -28,7 +36,8 @@ Page({
         images: editNote.images || [],
         isEdit: true,
         editId: editNote.id,
-        selectedTag: editNote.tag || ''
+        selectedTag: getTagWithIcon(editNote.tag),
+        selectedTagIndex: tags.findIndex(t => t.name === editNote.tag)
       });
       wx.removeStorageSync('editNote');
       return;
@@ -40,7 +49,8 @@ Page({
       this.setData({
         content: draft.content || '',
         images: draft.images || [],
-        selectedTag: draft.tag || ''
+        selectedTag: getTagWithIcon(draft.tag),
+        selectedTagIndex: tags.findIndex(t => t.name === draft.tag)
       });
       wx.removeStorageSync('draft');
     }
@@ -56,10 +66,12 @@ Page({
   onTagChange(e) {
     const index = e.detail.value;
     const tag = this.data.tags[index];
-    this.setData({
-      selectedTag: tag ? tag.name : '',
-      selectedTagIndex: index
-    });
+    if (tag) {
+      this.setData({
+        selectedTag: tag.icon + ' ' + tag.name,
+        selectedTagIndex: index
+      });
+    }
   },
 
   onInput(e) {
