@@ -9,15 +9,15 @@
   </picker>
 
   <!-- 文字输入 -->
-  <textarea
-    class="content-input"
-    placeholder="记录今天的小事..."
-    placeholder-class="placeholder"
-    value="{{content}}"
-    bindinput="onInput"
-    maxlength="-1"
-    auto-height
-  ></textarea>
+  <view class="input-wrapper">
+    <textarea
+      class="content-input"
+      placeholder="记录今天的小事..."
+      placeholder-class="placeholder"
+      value="{{content}}"
+      bindinput="onInput"
+    ></textarea>
+  </view>
 
   <!-- 图片预览 -->
   <view class="images-grid" wx:if="{{images.length > 0}}">
