@@ -19,8 +19,8 @@ Page({
     ],
     customTags: [],
     pickerTags: [],
-    selectedTag: '',
-    selectedTagIndex: -1,
+    selectedTag: '🏠 生活',
+    selectedTagIndex: 0,
     showCustomInput: false,
     customTagName: ''
   },
