@@ -3,11 +3,8 @@
   <!-- 标签选择 -->
   <picker mode="selector" range="{{pickerTags}}" range-key="displayName" value="{{selectedTagIndex}}" bindchange="onTagChange">
     <view class="tag-picker">
-      <text class="picker-label">标签</text>
-      <view class="picker-value">
-        <text>{{selectedTag || '选择标签'}}</text>
-        <text class="picker-arrow">▼</text>
-      </view>
+      <text>{{selectedTag || '选择标签'}}</text>
+      <text class="picker-arrow">▼</text>
     </view>
   </picker>
 
