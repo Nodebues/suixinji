@@ -11,6 +11,7 @@ Page({
     selectedFilterIndex: 0,
     selectedFilterDisplay: '🏠 全部',
     filterTags: [
+      { name: '全部', icon: '🏠', display: '🏠 全部' },
       { name: '生活', icon: '🏠', display: '🏠 生活' },
       { name: '恋爱', icon: '💕', display: '💕 恋爱' },
       { name: '工作', icon: '💼', display: '💼 工作' },
@@ -51,13 +52,13 @@ Page({
 
   onFilterChange(e) {
     const index = e.detail.value;
-    const tag = index === 0 ? '' : this.data.filterTags[index - 1].name;
-    const display = index === 0 ? '🏠 全部' : this.data.filterTags[index - 1].display;
+    const tag = this.data.filterTags[index];
+    const selectedTag = tag.name === '全部' ? '' : tag.name;
     this.setData({
-      selectedFilter: tag,
+      selectedFilter: selectedTag,
       selectedFilterIndex: index,
-      selectedFilterDisplay: display,
-      filteredNotes: this.filterNotes(this.data.notes, tag)
+      selectedFilterDisplay: tag.display,
+      filteredNotes: this.filterNotes(this.data.notes, selectedTag)
     });
   },
 
