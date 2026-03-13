@@ -6,7 +6,16 @@ Page({
     maxImages: 9,
     isEdit: false,
     editId: null,
-    tags: ['生活', '工作', '学习', '旅行', '美食', '运动', '心情', '其他'],
+    tags: [
+      { name: '生活', icon: '🏠' },
+      { name: '工作', icon: '💼' },
+      { name: '学习', icon: '📚' },
+      { name: '旅行', icon: '✈️' },
+      { name: '美食', icon: '🍜' },
+      { name: '运动', icon: '🏃' },
+      { name: '心情', icon: '😊' },
+      { name: '其他', icon: '📌' }
+    ],
     selectedTag: ''
   },
 

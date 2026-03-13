@@ -3,12 +3,12 @@
   <!-- 标签选择 -->
   <view class="tag-section">
     <view 
-      class="tag-item {{selectedTag === item ? 'selected' : ''}}"
+      class="tag-item {{selectedTag === item.name ? 'selected' : ''}}"
       wx:for="{{tags}}"
-      wx:key="*this"
+      wx:key="name"
       bindtap="selectTag"
-      data-tag="{{item}}"
-    >{{item}}</view>
+      data-tag="{{item.name}}"
+    >{{item.icon}} {{item.name}}</view>
   </view>
 
   <!-- 文字输入 -->
