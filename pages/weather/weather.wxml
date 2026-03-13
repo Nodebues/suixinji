@@ -76,12 +76,11 @@
           <text class="current-time-label">现在</text>
         </view>
         <view class="sun-arc-wrap">
-          <canvas canvas-id="sunChart" class="sun-canvas" style="width: {{canvasWidth * 0.5}}px; height: 100px;"></canvas>
+          <canvas canvas-id="sunChart" class="sun-canvas"></canvas>
         </view>
         <view class="sun-countdown">
-          <text class="countdown-icon">{{chartData.currentHour >= chartData.sunriseHour && chartData.currentHour < chartData.sunsetHour ? '🌇' : '🌅'}}</text>
+          <text class="countdown-status">{{chartData.currentHour >= chartData.sunriseHour && chartData.currentHour < chartData.sunsetHour ? '🌇 待日落' : '🌅 待日出'}}</text>
           <text class="countdown-value">{{chartData.remainingDaylight}}</text>
-          <text class="countdown-label">{{chartData.currentHour >= chartData.sunriseHour && chartData.currentHour < chartData.sunsetHour ? '后天黑' : '天亮前'}}</text>
         </view>
       </view>
       

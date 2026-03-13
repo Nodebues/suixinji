@@ -612,13 +612,8 @@ Page({
   },
 
   queryAndDrawSunChart(chartData) {
-    const query = wx.createSelectorQuery().in(this);
-    query.select('.sun-chart-wrap').boundingClientRect();
-    query.exec((res) => {
-      const rect = res && res[0];
-      const w = (rect && rect.width) ? rect.width : (this.data.canvasWidth || 345);
-      this.drawSunChart(chartData, w);
-    });
+    // 使用固定宽度 200rpx (约100px)
+    this.drawSunChart(chartData, 200);
   },
 
   drawSunChart(chartData, canvasWidth) {
