@@ -9,9 +9,9 @@ Page({
     startX: 0,
     selectedFilter: '',
     selectedFilterIndex: 0,
-    selectedFilterDisplay: '🏠 全部',
+    selectedFilterDisplay: '📋 全部',
     filterTags: [
-      { name: '全部', icon: '🏠', display: '🏠 全部' },
+      { name: '全部', icon: '📋', display: '📋 全部' },
       { name: '生活', icon: '🏠', display: '🏠 生活' },
       { name: '恋爱', icon: '💕', display: '💕 恋爱' },
       { name: '工作', icon: '💼', display: '💼 工作' },
