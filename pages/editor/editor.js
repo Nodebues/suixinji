@@ -28,7 +28,17 @@ Page({
   onLoad(options) {
     // 加载自定义标签
     const customTags = wx.getStorageSync('customTags') || [];
-    const pickerTags = [...this.data.tags, { name: '+ 添加自定义', icon: '➕' }, ...customTags];
+    
+    // 为每个标签添加显示名称
+    const formatTags = (tags) => tags.map(t => ({
+      ...t,
+      displayName: t.icon + ' ' + t.name
+    }));
+    
+    const defaultTags = formatTags(this.data.tags);
+    const customTagFormatted = formatTags(customTags);
+    const pickerTags = [...defaultTags, { name: '+ 添加自定义', icon: '➕', displayName: '➕ 添加自定义' }, ...customTagFormatted];
+    
     this.setData({ customTags, pickerTags });
 
     // 处理编辑模式或草稿
@@ -39,7 +49,7 @@ Page({
     const getTagWithIcon = (tagName) => {
       if (!tagName) return '';
       const tag = this.data.pickerTags.find(t => t.name === tagName);
-      return tag ? tag.icon + ' ' + tag.name : '';
+      return tag ? tag.displayName : '';
     };
 
     const editNote = wx.getStorageSync('editNote');
@@ -78,7 +88,7 @@ Page({
       this.setData({ showCustomInput: true });
     } else {
       this.setData({
-        selectedTag: tag.icon + ' ' + tag.name,
+        selectedTag: tag.displayName,
         selectedTagIndex: index
       });
     }
@@ -96,14 +106,18 @@ Page({
     }
     
     const icon = '📌';
-    const newTag = { name, icon };
+    const newTag = { name, icon, displayName: icon + ' ' + name };
     const customTags = [...this.data.customTags, newTag];
-    const pickerTags = [...this.data.tags, { name: '+ 添加自定义', icon: '➕' }, ...customTags];
+    
+    // 重新构建pickerTags
+    const defaultTags = this.data.pickerTags.filter(t => !t.isCustom);
+    const customTagFormatted = customTags.map(t => ({ ...t, displayName: t.icon + ' ' + t.name }));
+    const pickerTags = [...defaultTags, ...customTagFormatted];
     
     this.setData({
       customTags,
       pickerTags,
-      selectedTag: icon + ' ' + name,
+      selectedTag: newTag.displayName,
       selectedTagIndex: pickerTags.length - 1,
       showCustomInput: false,
       customTagName: ''
