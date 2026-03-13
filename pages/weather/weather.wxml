@@ -127,22 +127,6 @@
         </view>
       </view>
     </view>
-            <text class="time-label">日出</text>
-            <text class="time-value">{{chartData.sunriseTime || '--:--'}}</text>
-          </view>
-          <view class="time-item">
-            <text class="time-icon">🌇</text>
-            <text class="time-label">日落</text>
-            <text class="time-value">{{chartData.sunsetTime || '--:--'}}</text>
-          </view>
-          <view class="time-item">
-            <text class="time-icon">🌙</text>
-            <text class="time-label">昏影</text>
-            <text class="time-value">{{chartData.lastLight || '--:--'}}</text>
-          </view>
-        </view>
-      </view>
-    </view>
 
     <view class="hint">下拉可刷新天气</view>
   </block>
@@ -164,7 +148,7 @@
       <view class="result-item" wx:for="{{searchResults}}" wx:key="index" bindtap="selectLocation" data-lat="{{item.lat}}" data-lon="{{item.lon}}" data-name="{{item.name}}">
         <text class="result-icon">🔍</text>
         <text class="result-name">{{item.name}}</text>
-        <text class="result-add" bindtap="saveLocation" catchtap="saveLocation" data-lat="{{item.lat}}" data-lon="{{item.lon}}" data-name="{{item.name}}">+ 保存</text>
+        <text class="result-add" catchtap="saveLocation" data-lat="{{item.lat}}" data-lon="{{item.lon}}" data-name="{{item.name}}">+ 保存</text>
       </view>
     </view>
 
