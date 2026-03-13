@@ -64,6 +64,72 @@ Page({
 
   onShow() {
     this.loadWeather();
+    // 启动定时器每秒更新剩余时间
+    this.startTimer();
+  },
+
+  onHide() {
+    // 页面隐藏时停止定时器
+    this.stopTimer();
+  },
+
+  onUnload() {
+    this.stopTimer();
+  },
+
+  startTimer() {
+    if (this.timer) return;
+    this.timer = setInterval(() => {
+      this.updateRemainingDaylight();
+    }, 1000);
+  },
+
+  stopTimer() {
+    if (this.timer) {
+      clearInterval(this.timer);
+      this.timer = null;
+    }
+  },
+
+  updateRemainingDaylight() {
+    const chartData = this.data.chartData;
+    if (!chartData || !chartData.sunriseHour || !chartData.sunsetHour) return;
+
+    const now = new Date();
+    const currentHour = now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600;
+    const { sunriseHour, sunsetHour } = chartData;
+
+    let remainingText = '';
+    let remainingSeconds = 0;
+
+    if (currentHour < sunriseHour) {
+      // 未日出
+      remainingText = '未日出';
+    } else if (currentHour >= sunsetHour) {
+      // 已日落
+      remainingText = '0';
+    } else {
+      // 日出日落之间
+      const remainingHours = sunsetHour - currentHour;
+      remainingSeconds = Math.floor(remainingHours * 3600);
+      
+      if (remainingSeconds >= 3600) {
+        // 大于等于1小时
+        const hours = Math.floor(remainingSeconds / 3600);
+        const mins = Math.floor((remainingSeconds % 3600) / 60);
+        remainingText = `${hours}小时${mins}分钟`;
+      } else if (remainingSeconds >= 60) {
+        // 大于等于1分钟
+        remainingText = `${Math.floor(remainingSeconds / 60)}分钟`;
+      } else {
+        // 小于1分钟，显示倒计时
+        remainingText = `${remainingSeconds}秒`;
+      }
+    }
+
+    this.setData({
+      'chartData.remainingDaylight': remainingText
+    });
   },
 
   onPullDownRefresh() {
@@ -149,6 +215,9 @@ Page({
               feelsLike,
               chartData: todayData
             });
+
+            // 立即更新剩余日照时间
+            this.updateRemainingDaylight();
 
             // 获取地址名称
             if (!wx.getStorageSync('currentLocation')) {
@@ -370,10 +439,7 @@ Page({
       sunriseTime: fmtTime(sunriseHour),
       sunsetTime: fmtTime(sunsetHour),
       totalDaylight: `${Math.round((sunsetHour - sunriseHour) * 60 / 60)}小时`,
-      remainingDaylight: currentHour >= sunriseHour && currentHour < sunsetHour 
-        ? `${Math.round((sunsetHour - currentHour) * 60)}分钟`
-        : (currentHour < sunriseHour ? '未日出' : '已日落'),
-      currentTime: fmtTime(currentHour)
+      remainingDaylight: '--'
     };
   },
 
