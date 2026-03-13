@@ -9,16 +9,17 @@ Page({
     startX: 0,
     selectedFilter: '',
     selectedFilterIndex: 0,
+    selectedFilterDisplay: '🏠 全部',
     filterTags: [
-      { name: '生活', icon: '🏠' },
-      { name: '恋爱', icon: '💕' },
-      { name: '工作', icon: '💼' },
-      { name: '学习', icon: '📚' },
-      { name: '旅行', icon: '✈️' },
-      { name: '美食', icon: '🍜' },
-      { name: '运动', icon: '🏃' },
-      { name: '心情', icon: '😊' },
-      { name: '其他', icon: '📌' }
+      { name: '生活', icon: '🏠', display: '🏠 生活' },
+      { name: '恋爱', icon: '💕', display: '💕 恋爱' },
+      { name: '工作', icon: '💼', display: '💼 工作' },
+      { name: '学习', icon: '📚', display: '📚 学习' },
+      { name: '旅行', icon: '✈️', display: '✈️ 旅行' },
+      { name: '美食', icon: '🍜', display: '🍜 美食' },
+      { name: '运动', icon: '🏃', display: '🏃 运动' },
+      { name: '心情', icon: '😊', display: '😊 心情' },
+      { name: '其他', icon: '📌', display: '📌 其他' }
     ]
   },
 
@@ -51,9 +52,11 @@ Page({
   onFilterChange(e) {
     const index = e.detail.value;
     const tag = index === 0 ? '' : this.data.filterTags[index - 1].name;
+    const display = index === 0 ? '🏠 全部' : this.data.filterTags[index - 1].display;
     this.setData({
       selectedFilter: tag,
       selectedFilterIndex: index,
+      selectedFilterDisplay: display,
       filteredNotes: this.filterNotes(this.data.notes, tag)
     });
   },

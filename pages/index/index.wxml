@@ -8,9 +8,9 @@
   </view>
 
   <!-- 标签筛选 -->
-  <picker mode="selector" range="{{filterTags}}" range-key="name" value="{{selectedFilterIndex}}" bindchange="onFilterChange">
+  <picker mode="selector" range="{{filterTags}}" range-key="display" value="{{selectedFilterIndex}}" bindchange="onFilterChange">
     <view class="filter-picker">
-      <text>{{selectedFilter ? selectedFilter : '全部'}}</text>
+      <text>{{selectedFilterDisplay}}</text>
       <text class="filter-arrow">▼</text>
     </view>
   </picker>
