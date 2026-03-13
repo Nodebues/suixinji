@@ -2,10 +2,23 @@
 Page({
   data: {
     notes: [],
+    filteredNotes: [],
     loading: false,
     touchingIndex: -1,
     translateX: 0,
-    startX: 0
+    startX: 0,
+    selectedFilter: '',
+    filterTags: [
+      { name: '生活', icon: '🏠' },
+      { name: '恋爱', icon: '💕' },
+      { name: '工作', icon: '💼' },
+      { name: '学习', icon: '📚' },
+      { name: '旅行', icon: '✈️' },
+      { name: '美食', icon: '🍜' },
+      { name: '运动', icon: '🏃' },
+      { name: '心情', icon: '😊' },
+      { name: '其他', icon: '📌' }
+    ]
   },
 
   onLoad() {
@@ -23,11 +36,26 @@ Page({
 
   loadNotes() {
     const notes = wx.getStorageSync('notes') || [];
-    this.setData({ notes });
+    this.setData({ 
+      notes,
+      filteredNotes: this.filterNotes(notes, this.data.selectedFilter)
+    });
+  },
+
+  filterNotes(notes, tag) {
+    if (!tag) return notes;
+    return notes.filter(note => note.tag && note.tag.includes(tag));
+  },
+
+  onFilterChange(e) {
+    const tag = e.currentTarget.dataset.tag;
+    this.setData({
+      selectedFilter: tag,
+      filteredNotes: this.filterNotes(this.data.notes, tag)
+    });
   },
 
   goToEditor() {
-    // 清除草稿，确保新编辑页面是空的
     wx.removeStorageSync('draft');
     wx.navigateTo({ url: '/pages/editor/editor' });
   },
@@ -41,7 +69,6 @@ Page({
     wx.navigateTo({ url: `/pages/detail/detail?id=${id}` });
   },
 
-  // 滑动删除
   touchStart(e) {
     const index = e.currentTarget.dataset.index;
     this.setData({
@@ -57,7 +84,6 @@ Page({
     
     const currentX = e.touches[0].clientX;
     const diff = this.data.startX - currentX;
-    // 向左滑是正值，最大80px
     const translateX = Math.min(Math.max(diff, 0), 80);
     this.setData({ translateX });
   },
@@ -66,7 +92,6 @@ Page({
     const index = e.currentTarget.dataset.index;
     if (index !== this.data.touchingIndex) return;
     
-    // 滑动超过50px触发删除
     if (this.data.translateX > 50) {
       this.deleteNote(index);
     }
@@ -85,7 +110,10 @@ Page({
         if (res.confirm) {
           const notes = wx.getStorageSync('notes') || [];
           notes.splice(index, 1);
-          this.setData({ notes });
+          this.setData({ 
+            notes,
+            filteredNotes: this.filterNotes(notes, this.data.selectedFilter)
+          });
           wx.setStorageSync('notes', notes);
           wx.showToast({ title: '已删除', icon: 'success' });
         }

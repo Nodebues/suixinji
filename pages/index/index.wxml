@@ -7,12 +7,30 @@
     <text class="weather-arrow">›</text>
   </view>
 
+  <!-- 标签筛选 -->
+  <view class="filter-section">
+    <scroll-view class="filter-scroll" scroll-x>
+      <view 
+        class="filter-tag {{selectedFilter === '' ? 'active' : ''}}"
+        bindtap="onFilterChange"
+        data-tag=""
+      >全部</view>
+      <view 
+        class="filter-tag {{selectedFilter === item.name ? 'active' : ''}}"
+        wx:for="{{filterTags}}"
+        wx:key="name"
+        bindtap="onFilterChange"
+        data-tag="{{item.name}}"
+      >{{item.icon}} {{item.name}}</view>
+    </scroll-view>
+  </view>
+
   <!-- 笔记列表 -->
-  <block wx:if="{{notes.length > 0}}">
+  <block wx:if="{{filteredNotes.length > 0}}">
     <view class="note-list">
       <view 
         class="note-card-wrapper" 
-        wx:for="{{notes}}" 
+        wx:for="{{filteredNotes}}" 
         wx:key="id"
       >
         <view 
@@ -25,7 +43,10 @@
           bindtouchmove="touchMove"
           bindtouchend="touchEnd"
         >
-          <view class="note-time">{{item.formattedDate}}</view>
+          <view class="note-header">
+            <view class="note-tag" wx:if="{{item.tag}}">{{item.tag}}</view>
+            <view class="note-time">{{item.formattedDate}}</view>
+          </view>
           <view class="note-content">{{item.content}}</view>
           <view class="note-images" wx:if="{{item.images && item.images.length > 0}}">
             <image 
@@ -46,8 +67,8 @@
   <block wx:else>
     <view class="empty-state">
       <text class="empty-icon">📝</text>
-      <text class="empty-text">还没有记录</text>
-      <text class="empty-hint">点击下方按钮开始记录</text>
+      <text class="empty-text">{{selectedFilter ? '暂无相关记录' : '还没有记录'}}</text>
+      <text class="empty-hint">{{selectedFilter ? '试试其他标签' : '点击下方按钮开始记录'}}</text>
     </view>
   </block>
 

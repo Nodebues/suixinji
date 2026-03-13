@@ -8,13 +8,13 @@ Page({
     editId: null,
     tags: [
       { name: '生活', icon: '🏠' },
+      { name: '恋爱', icon: '💕' },
       { name: '工作', icon: '💼' },
       { name: '学习', icon: '📚' },
       { name: '旅行', icon: '✈️' },
       { name: '美食', icon: '🍜' },
       { name: '运动', icon: '🏃' },
       { name: '心情', icon: '😊' },
-      { name: '恋爱', icon: '💕' },
       { name: '其他', icon: '📌' }
     ],
     customTags: [],
