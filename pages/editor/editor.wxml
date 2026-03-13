@@ -1,7 +1,7 @@
 <!-- pages/editor/editor.wxml -->
 <view class="editor-container">
   <!-- 标签选择 -->
-  <picker mode="selector" range="{{tags}}" range-key="name" value="{{selectedTagIndex}}" bindchange="onTagChange">
+  <picker mode="selector" range="{{pickerTags}}" range-key="name" value="{{selectedTagIndex}}" bindchange="onTagChange">
     <view class="tag-picker">
       <text class="picker-label">标签</text>
       <view class="picker-value">
@@ -52,5 +52,22 @@
       <text class="tool-count">{{images.length}}/9</text>
     </view>
     <view class="save-btn" bindtap="save">保存</view>
+  </view>
+
+  <!-- 自定义标签输入弹窗 -->
+  <view class="custom-tag-mask" wx:if="{{showCustomInput}}" bindtap="cancelCustomTag"></view>
+  <view class="custom-tag-modal {{showCustomInput ? 'show' : ''}}">
+    <view class="modal-title">添加自定义标签</view>
+    <input 
+      class="custom-input" 
+      placeholder="请输入标签名称" 
+      maxlength="6"
+      bindinput="onCustomTagInput"
+      focus="{{showCustomInput}}"
+    />
+    <view class="modal-buttons">
+      <view class="modal-btn cancel" bindtap="cancelCustomTag">取消</view>
+      <view class="modal-btn confirm" bindtap="confirmCustomTag">确定</view>
+    </view>
   </view>
 </view>

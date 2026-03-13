@@ -17,18 +17,31 @@ Page({
       { name: '恋爱', icon: '💕' },
       { name: '其他', icon: '📌' }
     ],
+    customTags: [],
+    pickerTags: [],
     selectedTag: '',
-    selectedTagIndex: -1
+    selectedTagIndex: -1,
+    showCustomInput: false,
+    customTagName: ''
   },
 
   onLoad(options) {
-    const tags = this.data.tags;
+    // 加载自定义标签
+    const customTags = wx.getStorageSync('customTags') || [];
+    const pickerTags = [...this.data.tags, { name: '+ 添加自定义', icon: '➕' }, ...customTags];
+    this.setData({ customTags, pickerTags });
+
+    // 处理编辑模式或草稿
+    this.loadInitialData(options);
+  },
+
+  loadInitialData(options) {
     const getTagWithIcon = (tagName) => {
-      const tag = tags.find(t => t.name === tagName);
+      if (!tagName) return '';
+      const tag = this.data.pickerTags.find(t => t.name === tagName);
       return tag ? tag.icon + ' ' + tag.name : '';
     };
 
-    // 检查是否是编辑模式
     const editNote = wx.getStorageSync('editNote');
     if (editNote && options.edit === '1') {
       this.setData({
@@ -37,23 +50,73 @@ Page({
         isEdit: true,
         editId: editNote.id,
         selectedTag: getTagWithIcon(editNote.tag),
-        selectedTagIndex: tags.findIndex(t => t.name === editNote.tag)
+        selectedTagIndex: this.data.pickerTags.findIndex(t => t.name === editNote.tag)
       });
       wx.removeStorageSync('editNote');
       return;
     }
 
-    // 检查是否有草稿
     const draft = wx.getStorageSync('draft');
     if (draft) {
       this.setData({
         content: draft.content || '',
         images: draft.images || [],
         selectedTag: getTagWithIcon(draft.tag),
-        selectedTagIndex: tags.findIndex(t => t.name === draft.tag)
+        selectedTagIndex: this.data.pickerTags.findIndex(t => t.name === draft.tag)
       });
       wx.removeStorageSync('draft');
     }
+  },
+
+  onTagChange(e) {
+    const index = e.detail.value;
+    const tag = this.data.pickerTags[index];
+    
+    if (!tag) return;
+    
+    if (tag.name === '+ 添加自定义') {
+      this.setData({ showCustomInput: true });
+    } else {
+      this.setData({
+        selectedTag: tag.icon + ' ' + tag.name,
+        selectedTagIndex: index
+      });
+    }
+  },
+
+  onCustomTagInput(e) {
+    this.setData({ customTagName: e.detail.value });
+  },
+
+  confirmCustomTag() {
+    const name = this.data.customTagName.trim();
+    if (!name) {
+      wx.showToast({ title: '请输入标签名', icon: 'none' });
+      return;
+    }
+    
+    const icon = '📌';
+    const newTag = { name, icon };
+    const customTags = [...this.data.customTags, newTag];
+    const pickerTags = [...this.data.tags, { name: '+ 添加自定义', icon: '➕' }, ...customTags];
+    
+    this.setData({
+      customTags,
+      pickerTags,
+      selectedTag: icon + ' ' + name,
+      selectedTagIndex: pickerTags.length - 1,
+      showCustomInput: false,
+      customTagName: ''
+    });
+    
+    wx.setStorageSync('customTags', customTags);
+  },
+
+  cancelCustomTag() {
+    this.setData({
+      showCustomInput: false,
+      customTagName: ''
+    });
   },
 
   selectTag(e) {
@@ -61,17 +124,6 @@ Page({
     this.setData({
       selectedTag: this.data.selectedTag === tag ? '' : tag
     });
-  },
-
-  onTagChange(e) {
-    const index = e.detail.value;
-    const tag = this.data.tags[index];
-    if (tag) {
-      this.setData({
-        selectedTag: tag.icon + ' ' + tag.name,
-        selectedTagIndex: index
-      });
-    }
   },
 
   onInput(e) {
@@ -118,27 +170,28 @@ Page({
       return;
     }
 
+    // 获取纯标签名（去掉图标）
+    const tagName = this.data.selectedTag ? this.data.selectedTag.replace(/^\S\s/, '') : '';
+
     const notes = wx.getStorageSync('notes') || [];
 
     if (this.data.isEdit) {
-      // 编辑模式：更新笔记
       const index = notes.findIndex(n => n.id === this.data.editId);
       if (index !== -1) {
         notes[index] = {
           ...notes[index],
           content: this.data.content.trim(),
           images: this.data.images,
-          tag: this.data.selectedTag,
+          tag: tagName,
           formattedDate: this.formatDate(Date.now())
         };
       }
     } else {
-      // 新增模式
       const note = {
         id: this.generateId(),
         content: this.data.content.trim(),
         images: this.data.images,
-        tag: this.data.selectedTag,
+        tag: tagName,
         createdAt: Date.now(),
         formattedDate: this.formatDate(Date.now())
       };
@@ -146,11 +199,8 @@ Page({
     }
 
     wx.setStorageSync('notes', notes);
-
-    // 清除草稿
     wx.removeStorageSync('draft');
     
-    // 重置表单
     this.setData({
       content: '',
       images: [],
@@ -162,12 +212,12 @@ Page({
   },
 
   onUnload() {
-    // 自动保存草稿
     if (this.data.content || this.data.images.length > 0 || this.data.selectedTag) {
+      const tagName = this.data.selectedTag ? this.data.selectedTag.replace(/^\S\s/, '') : '';
       wx.setStorageSync('draft', {
         content: this.data.content,
         images: this.data.images,
-        tag: this.data.selectedTag
+        tag: tagName
       });
     }
   },

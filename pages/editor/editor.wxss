@@ -145,3 +145,75 @@
   border-radius: 40rpx;
   font-size: 28rpx;
 }
+
+/* 自定义标签弹窗 */
+.custom-tag-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 99;
+}
+
+.custom-tag-modal {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  width: 560rpx;
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 40rpx;
+  z-index: 100;
+  transition: transform 0.2s;
+}
+
+.custom-tag-modal.show {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.modal-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 32rpx;
+  color: #333;
+}
+
+.custom-input {
+  width: 100%;
+  height: 80rpx;
+  background: #f5f7fa;
+  border-radius: 16rpx;
+  padding: 0 24rpx;
+  font-size: 28rpx;
+  box-sizing: border-box;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 24rpx;
+  margin-top: 32rpx;
+}
+
+.modal-btn {
+  flex: 1;
+  height: 80rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 40rpx;
+  font-size: 28rpx;
+}
+
+.modal-btn.cancel {
+  background: #f5f7fa;
+  color: #666;
+}
+
+.modal-btn.confirm {
+  background: linear-gradient(135deg, #5B8FF9 0%, #7BA8F7 100%);
+  color: #fff;
+}
