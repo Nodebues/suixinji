@@ -2,7 +2,7 @@
 .editor-container {
   min-height: 100vh;
   background: #f8f9fc;
-  padding: 24rpx;
+  padding: 0;
   padding-bottom: 180rpx;
 }
 
@@ -11,7 +11,6 @@
   align-items: center;
   justify-content: space-between;
   background: #fff;
-  border-radius: 20rpx;
   padding: 28rpx 32rpx;
   margin-bottom: 24rpx;
   font-size: 30rpx;
@@ -31,7 +30,6 @@
   min-height: 500rpx;
   color: #333;
   background: #fff;
-  border-radius: 20rpx;
   padding: 32rpx;
   box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.04);
   box-sizing: border-box;
@@ -45,6 +43,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 20rpx;
+  padding: 0 32rpx;
   margin-top: 32rpx;
 }
 
