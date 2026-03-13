@@ -222,7 +222,7 @@ Page({
     });
 
     wx.showToast({ title: '保存成功', icon: 'success' });
-    setTimeout(() => wx.navigateBack(), 1500);
+    setTimeout(() => wx.navigateBack(), 800);
   },
 
   onUnload() {
