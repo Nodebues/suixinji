@@ -1,0 +1,142 @@
+// pages/editor/editor.js
+Page({
+  data: {
+    content: '',
+    images: [],
+    maxImages: 9,
+    isEdit: false,
+    editId: null
+  },
+
+  onLoad(options) {
+    // 检查是否是编辑模式
+    const editNote = wx.getStorageSync('editNote');
+    if (editNote && options.edit === '1') {
+      this.setData({
+        content: editNote.content || '',
+        images: editNote.images || [],
+        isEdit: true,
+        editId: editNote.id
+      });
+      wx.removeStorageSync('editNote');
+      return;
+    }
+
+    // 检查是否有草稿
+    const draft = wx.getStorageSync('draft');
+    if (draft) {
+      this.setData({
+        content: draft.content || '',
+        images: draft.images || []
+      });
+      wx.removeStorageSync('draft');
+    }
+  },
+
+  onInput(e) {
+    this.setData({ content: e.detail.value });
+  },
+
+  chooseImage() {
+    const remaining = this.data.maxImages - this.data.images.length;
+    if (remaining <= 0) {
+      wx.showToast({ title: '最多9张图', icon: 'none' });
+      return;
+    }
+
+    wx.chooseMedia({
+      count: remaining,
+      mediaType: ['image'],
+      sourceType: ['album', 'camera'],
+      success: (res) => {
+        const newImages = res.tempFiles.map(f => f.tempFilePath);
+        this.setData({
+          images: [...this.data.images, ...newImages].slice(0, 9)
+        });
+      }
+    });
+  },
+
+  removeImage(e) {
+    const index = e.currentTarget.dataset.index;
+    const images = this.data.images.filter((_, i) => i !== index);
+    this.setData({ images });
+  },
+
+  previewImage(e) {
+    const index = e.currentTarget.dataset.index;
+    wx.previewImage({
+      current: this.data.images[index],
+      urls: this.data.images
+    });
+  },
+
+  save() {
+    if (!this.data.content.trim() && this.data.images.length === 0) {
+      wx.showToast({ title: '内容和图片至少填写一个', icon: 'none' });
+      return;
+    }
+
+    const notes = wx.getStorageSync('notes') || [];
+
+    if (this.data.isEdit) {
+      // 编辑模式：更新笔记
+      const index = notes.findIndex(n => n.id === this.data.editId);
+      if (index !== -1) {
+        notes[index] = {
+          ...notes[index],
+          content: this.data.content.trim(),
+          images: this.data.images,
+          formattedDate: this.formatDate(Date.now())
+        };
+      }
+    } else {
+      // 新增模式
+      const note = {
+        id: this.generateId(),
+        content: this.data.content.trim(),
+        images: this.data.images,
+        createdAt: Date.now(),
+        formattedDate: this.formatDate(Date.now())
+      };
+      notes.unshift(note);
+    }
+
+    wx.setStorageSync('notes', notes);
+
+    // 清除草稿
+    wx.removeStorageSync('draft');
+    
+    // 重置表单
+    this.setData({
+      content: '',
+      images: []
+    });
+
+    wx.showToast({ title: '保存成功', icon: 'success' });
+    setTimeout(() => wx.navigateBack(), 1500);
+  },
+
+  onUnload() {
+    // 自动保存草稿
+    if (this.data.content || this.data.images.length > 0) {
+      wx.setStorageSync('draft', {
+        content: this.data.content,
+        images: this.data.images
+      });
+    }
+  },
+
+  generateId() {
+    return 'note_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+  },
+
+  formatDate(timestamp) {
+    const date = new Date(timestamp);
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const hour = date.getHours();
+    const minute = date.getMinutes().toString().padStart(2, '0');
+    return `${month}月${day}日 ${hour}:${minute}`;
+  }
+});

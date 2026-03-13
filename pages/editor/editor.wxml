@@ -1,0 +1,45 @@
+<!-- pages/editor/editor.wxml -->
+<view class="editor-container">
+  <!-- 文字输入 -->
+  <textarea
+    class="content-input"
+    placeholder="记录今天的小事..."
+    placeholder-class="placeholder"
+    value="{{content}}"
+    bindinput="onInput"
+    maxlength="-1"
+    auto-height
+  ></textarea>
+
+  <!-- 图片预览 -->
+  <view class="images-grid" wx:if="{{images.length > 0}}">
+    <view 
+      class="image-item" 
+      wx:for="{{images}}" 
+      wx:key="*this"
+    >
+      <image 
+        src="{{item}}" 
+        mode="aspectFill" 
+        class="preview-img"
+        bindtap="previewImage"
+        data-index="{{index}}"
+      />
+      <view 
+        class="remove-btn" 
+        bindtap="removeImage"
+        data-index="{{index}}"
+      >×</view>
+    </view>
+  </view>
+
+  <!-- 底部工具栏 -->
+  <view class="toolbar">
+    <view class="tool-btn" bindtap="chooseImage">
+      <text class="tool-icon">📷</text>
+      <text class="tool-text">添加图片</text>
+      <text class="tool-count">{{images.length}}/9</text>
+    </view>
+    <view class="save-btn" bindtap="save">保存</view>
+  </view>
+</view>

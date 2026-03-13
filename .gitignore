@@ -1,0 +1,11 @@
+# 微信小程序
+/node_modules/
+*.log
+.DS_Store
+
+# 开发工具
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln

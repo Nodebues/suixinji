@@ -1,0 +1,18 @@
+<!-- pages/detail/detail.wxml -->
+<view class="detail-container" wx:if="{{note}}" bindtap="goToEdit">
+  <view class="detail-time">{{note.formattedDate}}</view>
+  <view class="detail-content">{{note.content}}</view>
+  
+  <view class="detail-images" wx:if="{{note.images && note.images.length > 0}}" catchtap="previewImage">
+    <image 
+      wx:for="{{note.images}}" 
+      wx:key="*this"
+      src="{{item}}" 
+      mode="widthFix"
+      class="detail-img"
+      data-index="{{index}}"
+    />
+  </view>
+
+  <view class="edit-hint">点击内容编辑</view>
+</view>

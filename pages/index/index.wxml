@@ -1,0 +1,56 @@
+<!-- pages/index/index.wxml -->
+<view class="container">
+  <!-- 天气入口 -->
+  <view class="weather-entry" bindtap="goToWeather">
+    <text class="weather-icon">🌤</text>
+    <text class="weather-text">查看天气</text>
+    <text class="weather-arrow">›</text>
+  </view>
+
+  <!-- 笔记列表 -->
+  <block wx:if="{{notes.length > 0}}">
+    <view class="note-list">
+      <view 
+        class="note-card-wrapper" 
+        wx:for="{{notes}}" 
+        wx:key="id"
+      >
+        <view 
+          class="note-card {{touchingIndex === index ? 'touched' : ''}}"
+          style="transform: translateX(-{{touchingIndex === index ? translateX : 0}}px)"
+          bindtap="goToDetail"
+          data-id="{{item.id}}"
+          data-index="{{index}}"
+          bindtouchstart="touchStart"
+          bindtouchmove="touchMove"
+          bindtouchend="touchEnd"
+        >
+          <view class="note-time">{{item.formattedDate}}</view>
+          <view class="note-content">{{item.content}}</view>
+          <view class="note-images" wx:if="{{item.images && item.images.length > 0}}">
+            <image 
+              wx:for="{{item.images}}" 
+              wx:for-item="img" 
+              src="{{img}}" 
+              mode="aspectFill"
+              class="note-thumb"
+            />
+          </view>
+        </view>
+        <view class="delete-btn" wx:if="{{touchingIndex === index && translateX > 20}}">删除</view>
+      </view>
+    </view>
+  </block>
+
+  <!-- 空状态 -->
+  <block wx:else>
+    <view class="empty-state">
+      <text class="empty-icon">📝</text>
+      <text class="empty-text">还没有记录</text>
+      <text class="empty-hint">点击下方按钮开始记录</text>
+    </view>
+  </block>
+
+  <!-- 发布按钮 -->
+  <view class="add-btn" bindtap="goToEditor">+</view>
+</view>

@@ -1,0 +1,40 @@
+/* pages/detail/detail.wxss */
+.detail-container {
+  min-height: 100vh;
+  background: #fff;
+  padding: 32rpx;
+  padding-bottom: 120rpx;
+}
+
+.detail-time {
+  font-size: 26rpx;
+  color: #999;
+  margin-bottom: 32rpx;
+}
+
+.detail-content {
+  font-size: 30rpx;
+  line-height: 1.8;
+  color: #333;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.detail-images {
+  margin-top: 32rpx;
+}
+
+.detail-img {
+  width: 100%;
+  border-radius: 12rpx;
+  margin-bottom: 16rpx;
+}
+
+.edit-hint {
+  position: fixed;
+  bottom: 60rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #999;
+  font-size: 24rpx;
+}
