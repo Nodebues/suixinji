@@ -35,6 +35,7 @@ Page({
     loading: true,
     error: '',
     location: '',
+    locationName: '',
     temp: '',
     weatherText: '',
     weatherCode: 0,
@@ -44,7 +45,13 @@ Page({
     canvasWidth: 345,
     selectedTime: '',
     selectedTemp: '',
-    selectedIndex: -1
+    selectedIndex: -1,
+    showAddressPicker: false,
+    searchResults: [],
+    searchKeyword: '',
+    savedLocations: [],
+    currentLat: '',
+    currentLon: ''
   },
 
   onLoad() {
@@ -52,6 +59,10 @@ Page({
     const w = sys.windowWidth || 345;
     const padding = Math.round(64 * (w / 750));
     this.setData({ canvasWidth: w - padding });
+    this.loadSavedLocations();
+  },
+
+  onShow() {
     this.loadWeather();
   },
 
@@ -61,8 +72,25 @@ Page({
     });
   },
 
+  loadSavedLocations() {
+    const saved = wx.getStorageSync('savedLocations') || [];
+    this.setData({ savedLocations: saved });
+  },
+
   loadWeather() {
     this.setData({ loading: true, error: '' });
+
+    // 检查是否有选中的固定地址
+    const currentLocation = wx.getStorageSync('currentLocation');
+    if (currentLocation) {
+      return this.fetchWeather(currentLocation.lat, currentLocation.lon)
+        .then(() => {
+          this.setData({
+            location: currentLocation.name,
+            locationName: currentLocation.name
+          });
+        });
+    }
 
     return new Promise((resolve) => {
       wx.getLocation({
@@ -83,6 +111,8 @@ Page({
   },
 
   fetchWeather(lat, lon) {
+    this.setData({ currentLat: lat, currentLon: lon });
+    
     const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,relative_humidity_2m,apparent_temperature&daily=sunrise,sunset&timezone=auto`;
 
     return new Promise((resolve, reject) => {
@@ -94,7 +124,6 @@ Page({
             const hourly = res.data.hourly || {};
             const code = cur.weathercode || 0;
 
-            // 从 hourly 中取当前小时的湿度和体感温度
             let humidity = '--';
             let feelsLike = '--';
             if (cur.time && hourly.time && hourly.relative_humidity_2m && hourly.apparent_temperature) {
@@ -108,7 +137,6 @@ Page({
               }
             }
 
-            // 解析当天温度曲线、日出日落数据
             const todayData = this.parseTodayChartData(res.data, cur.time);
 
             this.setData({
@@ -119,12 +147,13 @@ Page({
               windSpeed: cur.windspeed != null ? cur.windspeed + ' km/h' : '--',
               humidity,
               feelsLike,
-              location: '获取位置中...',
               chartData: todayData
             });
 
-            // 逆地理编码获取地址
-            this.fetchAddress(lat, lon);
+            // 获取地址名称
+            if (!wx.getStorageSync('currentLocation')) {
+              this.fetchAddress(lat, lon);
+            }
 
             setTimeout(() => {
               this.drawTempChart(todayData, -1);
@@ -144,7 +173,6 @@ Page({
   },
 
   fetchAddress(lat, lon) {
-    // zoom=18 获取更详细的地址，addressdetails=1 返回完整地址组件
     const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=18&addressdetails=1`;
 
     wx.request({
@@ -156,35 +184,29 @@ Page({
         if (res.statusCode === 200 && res.data) {
           const data = res.data;
           let location = data.address ? this.buildDetailedAddress(data.address) : '';
-          // 若地址组件不足，用 display_name 截取（去掉邮编等）
           if (!location || location === '当前位置') {
             location = this.parseDisplayName(data.display_name);
           }
-          this.setData({ location: location || '当前位置' });
-        } else {
-          this.setData({ location: '当前位置' });
+          this.setData({ 
+            location: location || '当前位置',
+            locationName: location || '当前位置'
+          });
         }
-      },
-      fail: () => {
-        this.setData({ location: '当前位置' });
       }
     });
   },
 
-  // 按从具体到宏观的顺序拼接地址，尽可能详细到区/县/街道/社区
   buildDetailedAddress(addr) {
     const parts = [];
     const seen = new Set();
-
-    // 按层级从细到粗依次添加：路/门牌 → 社区/小区 → 街道/镇 → 区/县 → 市 → 省 → 国家
     const keys = [
-      'road', 'house_number',           // 路、门牌
-      'neighbourhood', 'quarter',       // 小区、社区
-      'suburb', 'city_district',        // 街道、片区
-      'village', 'town', 'municipality', // 村、镇、市辖区
-      'city', 'county',                 // 区、县
-      'state',                           // 省/直辖市
-      'country'                          // 国家
+      'road', 'house_number',
+      'neighbourhood', 'quarter',
+      'suburb', 'city_district',
+      'village', 'town', 'municipality',
+      'city', 'county',
+      'state',
+      'country'
     ];
 
     for (const key of keys) {
@@ -205,7 +227,97 @@ Page({
     return filtered.slice(0, 4).join(' · ') || '当前位置';
   },
 
-  // 解析当天图表数据：24小时温度、日出日落、当前时刻
+  // 地址选择相关
+  onLocationTap() {
+    this.setData({ showAddressPicker: true, searchResults: [], searchKeyword: '' });
+    this.loadSavedLocations();
+  },
+
+  closeAddressPicker() {
+    this.setData({ showAddressPicker: false });
+  },
+
+  onSearchInput(e) {
+    const keyword = e.detail.value;
+    this.setData({ searchKeyword: keyword });
+    if (keyword.length >= 2) {
+      this.searchLocation(keyword);
+    } else {
+      this.setData({ searchResults: [] });
+    }
+  },
+
+  searchLocation(keyword) {
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(keyword)}&limit=5`;
+
+    wx.request({
+      url,
+      header: {
+        'User-Agent': 'SuiXinJi-MiniProgram/1.0'
+      },
+      success: (res) => {
+        if (res.statusCode === 200 && res.data) {
+          const results = res.data.map(item => ({
+            name: item.display_name.split(',').slice(0, 4).join(','),
+            lat: item.lat,
+            lon: item.lon
+          }));
+          this.setData({ searchResults: results });
+        }
+      }
+    });
+  },
+
+  selectLocation(e) {
+    const { lat, lon, name } = e.currentTarget.dataset;
+    this.setData({ showAddressPicker: false });
+    
+    // 保存为当前地址
+    wx.setStorageSync('currentLocation', { lat, lon, name });
+    this.setData({ location: name, locationName: name });
+    this.fetchWeather(lat, lon);
+  },
+
+  useCurrentLocation() {
+    this.setData({ showAddressPicker: false });
+    wx.removeStorageSync('currentLocation');
+    this.loadWeather();
+  },
+
+  saveLocation(e) {
+    const { lat, lon, name } = e.currentTarget.dataset;
+    const saved = this.data.savedLocations || [];
+    
+    // 检查是否已存在
+    const exists = saved.some(l => l.lat === lat && l.lon === lon);
+    if (exists) {
+      wx.showToast({ title: '已存在', icon: 'none' });
+      return;
+    }
+
+    saved.push({ lat, lon, name });
+    this.setData({ savedLocations: saved });
+    wx.setStorageSync('savedLocations', saved);
+    wx.showToast({ title: '已保存', icon: 'success' });
+  },
+
+  deleteSavedLocation(e) {
+    const index = e.currentTarget.dataset.index;
+    const saved = this.data.savedLocations;
+    saved.splice(index, 1);
+    this.setData({ savedLocations: saved });
+    wx.setStorageSync('savedLocations', saved);
+  },
+
+  selectSavedLocation(e) {
+    const { lat, lon, name } = e.currentTarget.dataset;
+    this.setData({ showAddressPicker: false });
+    wx.setStorageSync('currentLocation', { lat, lon, name });
+    this.setData({ location: name, locationName: name });
+    this.fetchWeather(lat, lon);
+  },
+
+  // 图表相关方法
   parseTodayChartData(data, currentTime) {
     const hourly = data.hourly || {};
     const daily = data.daily || {};
@@ -215,17 +327,15 @@ Page({
     const today = currentTime ? currentTime.substring(0, 10) : (daily.time && daily.time[0]) || '';
     let todayIndex = times.findIndex(t => t.startsWith(today));
     if (todayIndex < 0) todayIndex = 0;
-    const todayCount = 24;
 
     const hourLabels = [];
     const tempData = [];
-    for (let i = 0; i < todayCount; i++) {
+    for (let i = 0; i < 24; i++) {
       const idx = todayIndex + i;
-      if (idx < times.length && times[idx]) {
+      if (idx < times.length && temps[idx] != null) {
         const t = times[idx];
-        const h = parseInt(t.substring(11, 13), 10);
-        hourLabels.push(String(h).padStart(2, '0') + ':00');
-        tempData.push(temps[idx] != null ? temps[idx] : null);
+        hourLabels.push(String(parseInt(t.substring(11, 13))).padStart(2, '0') + ':00');
+        tempData.push(temps[idx]);
       }
     }
 
@@ -234,22 +344,12 @@ Page({
 
     let currentHour = 12;
     if (currentTime) {
-      const h = parseInt(currentTime.substring(11, 13), 10);
-      const m = parseInt(currentTime.substring(14, 16), 10);
-      currentHour = h + m / 60;
+      currentHour = parseInt(currentTime.substring(11, 13)) + parseInt(currentTime.substring(14, 16)) / 60;
     }
 
     let sunriseHour = 6, sunsetHour = 18;
-    if (sunrise) sunriseHour = parseInt(sunrise.substring(11, 13), 10) + parseInt(sunrise.substring(14, 16), 10) / 60;
-    if (sunset) sunsetHour = parseInt(sunset.substring(11, 13), 10) + parseInt(sunset.substring(14, 16), 10) / 60;
-
-    const firstLightHour = sunriseHour - 24 / 60;
-    const lastLightHour = sunsetHour + 24 / 60;
-    const totalDaylightMin = Math.round((sunsetHour - sunriseHour) * 60);
-    let remainingDaylightMin = 0;
-    if (currentHour >= sunriseHour && currentHour < sunsetHour) {
-      remainingDaylightMin = Math.round((sunsetHour - currentHour) * 60);
-    }
+    if (sunrise) sunriseHour = parseInt(sunrise.substring(11, 13)) + parseInt(sunrise.substring(14, 16)) / 60;
+    if (sunset) sunsetHour = parseInt(sunset.substring(11, 13)) + parseInt(sunset.substring(14, 16)) / 60;
 
     const fmtTime = (h) => {
       const hh = Math.floor(h);
@@ -265,16 +365,14 @@ Page({
       currentHour,
       sunrise,
       sunset,
-      firstLightHour,
-      lastLightHour,
-      firstLight: fmtTime(firstLightHour),
-      lastLight: fmtTime(lastLightHour),
+      firstLight: fmtTime(sunriseHour - 0.4),
+      lastLight: fmtTime(sunsetHour + 0.4),
       sunriseTime: fmtTime(sunriseHour),
       sunsetTime: fmtTime(sunsetHour),
-      totalDaylightMin,
-      totalDaylight: `${Math.floor(totalDaylightMin / 60)}小时${totalDaylightMin % 60}分钟`,
-      remainingDaylightMin,
-      remainingDaylight: remainingDaylightMin > 0 ? `${Math.floor(remainingDaylightMin / 60)}小时${remainingDaylightMin % 60}分钟` : (currentHour < sunriseHour ? '未日出' : '已日落'),
+      totalDaylight: `${Math.round((sunsetHour - sunriseHour) * 60 / 60)}小时`,
+      remainingDaylight: currentHour >= sunriseHour && currentHour < sunsetHour 
+        ? `${Math.round((sunsetHour - currentHour) * 60)}分钟`
+        : (currentHour < sunriseHour ? '未日出' : '已日落'),
       currentTime: fmtTime(currentHour)
     };
   },
@@ -282,8 +380,7 @@ Page({
   onTempChartTouch(e) {
     const touch = (e.detail && e.detail.touches && e.detail.touches[0]) || (e.touches && e.touches[0]);
     if (!touch) return;
-    const clientX = touch.clientX || touch.x;
-    const clientY = touch.clientY || touch.y;
+    
     const chartData = this.data.chartData;
     if (!chartData || !chartData.tempData || chartData.tempData.length === 0) return;
 
@@ -292,11 +389,10 @@ Page({
     query.exec((res) => {
       if (!res || !res[0]) return;
       const rect = res[0];
-      const touchX = clientX - rect.left;
-      const touchY = clientY - rect.top;
+      const touchX = touch.clientX - rect.left;
 
       const w = this.data.canvasWidth || 345;
-      const padding = { left: 44, right: 24 };
+      const padding = { left: 36, right: 16 };
       const chartW = w - padding.left - padding.right;
 
       if (touchX < padding.left || touchX > w - padding.right) return;
@@ -344,11 +440,9 @@ Page({
 
     const tempToY = (t) => padding.top + chartH - ((t - baseT) / (topT - baseT)) * chartH;
 
-    // 背景
     ctx.setFillStyle('#ffffff');
     ctx.fillRect(0, 0, w, h);
 
-    // 网格线
     ctx.setStrokeStyle('#f1f5f9');
     ctx.setLineWidth(1);
     for (let i = 0; i <= 4; i++) {
@@ -359,7 +453,6 @@ Page({
       ctx.stroke();
     }
 
-    // Y轴标签
     ctx.setFontSize(10);
     ctx.setFillStyle('#94a3b8');
     for (let i = 0; i <= 4; i++) {
@@ -378,7 +471,6 @@ Page({
 
     if (points.length < 2) return;
 
-    // 渐变填充
     const gradient = ctx.createLinearGradient(0, padding.top, 0, padding.top + chartH);
     gradient.addColorStop(0, 'rgba(91, 143, 249, 0.25)');
     gradient.addColorStop(0.5, 'rgba(91, 143, 249, 0.08)');
@@ -398,7 +490,6 @@ Page({
     ctx.setFillStyle(gradient);
     ctx.fill();
 
-    // 曲线
     ctx.setStrokeStyle('#5B8FF9');
     ctx.setLineWidth(2.5);
     ctx.setLineCap('round');
@@ -413,7 +504,6 @@ Page({
     }
     ctx.stroke();
 
-    // 绘制点
     points.forEach((p, i) => {
       const isSelected = idx >= 0 && p.dataIndex === idx;
       const isHourPoint = i % 3 === 0 || i === points.length - 1;
@@ -429,7 +519,6 @@ Page({
       }
     });
 
-    // 选中指示线
     if (idx >= 0 && chartData.tempData[idx] != null) {
       const selPoint = points.find(p => p.dataIndex === idx);
       if (selPoint) {
@@ -444,7 +533,6 @@ Page({
       }
     }
 
-    // X轴标签
     ctx.setFontSize(9);
     ctx.setFillStyle('#94a3b8');
     chartData.hourLabels.forEach((label, i) => {
@@ -481,13 +569,11 @@ Page({
     const sunsetHour = chartData.sunsetHour;
     const currentHour = chartData.currentHour;
 
-    // 背景
     ctx.setFillStyle('#1e293b');
     ctx.fillRect(0, 0, w, h);
 
     const hourToX = (hour) => padding.left + (chartW * hour) / 23;
 
-    // 地平线
     const horizonY = padding.top + chartH * 0.7;
     ctx.setStrokeStyle('rgba(255,255,255,0.3)');
     ctx.setLineWidth(1);
@@ -498,7 +584,6 @@ Page({
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // 太阳轨迹（抛物线）
     const sunYAt = (hour) => {
       if (hour < sunriseHour || hour > sunsetHour) return horizonY;
       const t = (hour - sunriseHour) / (sunsetHour - sunriseHour);
@@ -506,7 +591,6 @@ Page({
       return horizonY - s * chartH * 0.85;
     };
 
-    // 白天渐变区域
     ctx.beginPath();
     ctx.moveTo(hourToX(sunriseHour), horizonY);
     for (let hr = sunriseHour; hr <= sunsetHour; hr += 0.2) {
@@ -521,7 +605,6 @@ Page({
     ctx.setFillStyle(dayGradient);
     ctx.fill();
 
-    // 太阳轨迹线
     ctx.setStrokeStyle('rgba(251, 191, 36, 0.8)');
     ctx.setLineWidth(2);
     ctx.setLineCap('round');
@@ -532,7 +615,6 @@ Page({
     }
     ctx.stroke();
 
-    // 日出/日落点
     [sunriseHour, sunsetHour].forEach((hr) => {
       const x = hourToX(hr);
       ctx.setFillStyle('rgba(251, 191, 36, 0.6)');
@@ -541,11 +623,9 @@ Page({
       ctx.fill();
     });
 
-    // 当前太阳位置
     const currX = hourToX(currentHour);
     const currY = sunYAt(currentHour);
     
-    // 太阳光晕
     const glow = ctx.createRadialGradient(currX, currY, 0, currX, currY, 16);
     glow.addColorStop(0, 'rgba(251, 191, 36, 0.8)');
     glow.addColorStop(0.5, 'rgba(251, 191, 36, 0.3)');
@@ -555,13 +635,11 @@ Page({
     ctx.arc(currX, currY, 16, 0, Math.PI * 2);
     ctx.fill();
 
-    // 太阳本体
     ctx.setFillStyle('#fbbf24');
     ctx.beginPath();
     ctx.arc(currX, currY, 6, 0, Math.PI * 2);
     ctx.fill();
 
-    // 时间刻度
     ctx.setFontSize(9);
     ctx.setFillStyle('rgba(255,255,255,0.5)');
     [0, 6, 12, 18, 23].forEach((i) => {
