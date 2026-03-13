@@ -28,7 +28,7 @@
   width: 100%;
   font-size: 32rpx;
   line-height: 1.8;
-  min-height: 400rpx;
+  min-height: 500rpx;
   color: #333;
   background: #fff;
   border-radius: 20rpx;
