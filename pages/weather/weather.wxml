@@ -70,19 +70,18 @@
 
     <!-- 日出日落 -->
     <view class="sun-section" wx:if="{{chartData}}">
-      <view class="sun-header">
-        <view class="sun-rise">
-          <text class="sun-icon">🌅</text>
-          <text class="sun-time">{{chartData.sunriseTime || '--'}}</text>
-          <text class="sun-label">日出</text>
+      <view class="sun-main-row">
+        <view class="sun-current-time">
+          <text class="current-time-value">{{chartData.currentTime}}</text>
+          <text class="current-time-label">现在</text>
         </view>
         <view class="sun-arc-wrap">
-          <canvas canvas-id="sunChart" class="sun-canvas" style="width: {{canvasWidth}}px; height: 120px;"></canvas>
+          <canvas canvas-id="sunChart" class="sun-canvas" style="width: {{canvasWidth * 0.5}}px; height: 100px;"></canvas>
         </view>
-        <view class="sun-set">
-          <text class="sun-icon">🌇</text>
-          <text class="sun-time">{{chartData.sunsetTime || '--'}}</text>
-          <text class="sun-label">日落</text>
+        <view class="sun-countdown">
+          <text class="countdown-icon">{{chartData.currentHour >= chartData.sunriseHour && chartData.currentHour < chartData.sunsetHour ? '🌇' : '🌅'}}</text>
+          <text class="countdown-value">{{chartData.remainingDaylight}}</text>
+          <text class="countdown-label">{{chartData.currentHour >= chartData.sunriseHour && chartData.currentHour < chartData.sunsetHour ? '后天黑' : '天亮前'}}</text>
         </view>
       </view>
       
@@ -93,8 +92,13 @@
         </view>
         <view class="sun-stat-divider"></view>
         <view class="sun-stat-item">
-          <text class="stat-value">{{chartData.remainingDaylight || '--'}}</text>
-          <text class="stat-label">剩余日照</text>
+          <text class="stat-value">{{chartData.sunriseTime || '--'}}</text>
+          <text class="stat-label">日出</text>
+        </view>
+        <view class="sun-stat-divider"></view>
+        <view class="sun-stat-item">
+          <text class="stat-value">{{chartData.sunsetTime || '--'}}</text>
+          <text class="stat-label">日落</text>
         </view>
       </view>
 
@@ -107,6 +111,22 @@
           </view>
           <view class="time-item">
             <text class="time-icon">🌅</text>
+            <text class="time-label">日出</text>
+            <text class="time-value">{{chartData.sunriseTime || '--:--'}}</text>
+          </view>
+          <view class="time-item">
+            <text class="time-icon">🌇</text>
+            <text class="time-label">日落</text>
+            <text class="time-value">{{chartData.sunsetTime || '--:--'}}</text>
+          </view>
+          <view class="time-item">
+            <text class="time-icon">🌙</text>
+            <text class="time-label">昏影</text>
+            <text class="time-value">{{chartData.lastLight || '--:--'}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
             <text class="time-label">日出</text>
             <text class="time-value">{{chartData.sunriseTime || '--:--'}}</text>
           </view>

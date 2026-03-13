@@ -99,35 +99,35 @@ Page({
     const currentHour = now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600;
     const { sunriseHour, sunsetHour } = chartData;
 
+    // 更新当前时间
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    const currentTimeStr = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+
     let remainingText = '';
     let remainingSeconds = 0;
 
     if (currentHour < sunriseHour) {
-      // 未日出
       remainingText = '未日出';
     } else if (currentHour >= sunsetHour) {
-      // 已日落
       remainingText = '0';
     } else {
-      // 日出日落之间
       const remainingHours = sunsetHour - currentHour;
       remainingSeconds = Math.floor(remainingHours * 3600);
       
       if (remainingSeconds >= 3600) {
-        // 大于等于1小时
         const hours = Math.floor(remainingSeconds / 3600);
         const mins = Math.floor((remainingSeconds % 3600) / 60);
         remainingText = `${hours}小时${mins}分钟`;
       } else if (remainingSeconds >= 60) {
-        // 大于等于1分钟
         remainingText = `${Math.floor(remainingSeconds / 60)}分钟`;
       } else {
-        // 小于1分钟，显示倒计时
         remainingText = `${remainingSeconds}秒`;
       }
     }
 
     this.setData({
+      'chartData.currentTime': currentTimeStr,
       'chartData.remainingDaylight': remainingText
     });
   },
