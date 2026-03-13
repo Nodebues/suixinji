@@ -106,23 +106,22 @@ Page({
 
     let remainingText = '';
     let remainingSeconds = 0;
+    const isDaytime = currentHour >= sunriseHour && currentHour < sunsetHour;
 
-    if (currentHour < sunriseHour) {
-      remainingText = '未日出';
-    } else if (currentHour >= sunsetHour) {
-      remainingText = '0';
+    if (!isDaytime) {
+      remainingText = currentHour < sunriseHour ? '未日出' : '已日落';
     } else {
       const remainingHours = sunsetHour - currentHour;
       remainingSeconds = Math.floor(remainingHours * 3600);
       
       if (remainingSeconds >= 3600) {
-        const hours = Math.floor(remainingSeconds / 3600);
+        const hrs = Math.floor(remainingSeconds / 3600);
         const mins = Math.floor((remainingSeconds % 3600) / 60);
-        remainingText = `${hours}小时${mins}分钟`;
+        remainingText = `${hrs}小时${mins}分钟`;
       } else if (remainingSeconds >= 60) {
         remainingText = `${Math.floor(remainingSeconds / 60)}分钟`;
       } else {
-        remainingText = `${remainingSeconds}秒`;
+        remainingText = '即将日落';
       }
     }
 
