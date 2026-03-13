@@ -73,7 +73,7 @@
       <view class="sun-main-row">
         <view class="sun-current-time">
           <text class="current-time-value">{{chartData.currentTime}}</text>
-          <text class="current-time-label">现在</text>
+          <text class="current-time-label">当前时间</text>
         </view>
         <view class="sun-arc-wrap">
           <canvas canvas-id="sunChart" class="sun-canvas"></canvas>

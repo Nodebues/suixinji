@@ -1,5 +1,16 @@
 <!-- pages/editor/editor.wxml -->
 <view class="editor-container">
+  <!-- 标签选择 -->
+  <view class="tag-section">
+    <view 
+      class="tag-item {{selectedTag === item ? 'selected' : ''}}"
+      wx:for="{{tags}}"
+      wx:key="*this"
+      bindtap="selectTag"
+      data-tag="{{item}}"
+    >{{item}}</view>
+  </view>
+
   <!-- 文字输入 -->
   <textarea
     class="content-input"

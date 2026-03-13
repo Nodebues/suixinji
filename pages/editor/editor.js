@@ -5,7 +5,9 @@ Page({
     images: [],
     maxImages: 9,
     isEdit: false,
-    editId: null
+    editId: null,
+    tags: ['生活', '工作', '学习', '旅行', '美食', '运动', '心情', '其他'],
+    selectedTag: ''
   },
 
   onLoad(options) {
@@ -16,7 +18,8 @@ Page({
         content: editNote.content || '',
         images: editNote.images || [],
         isEdit: true,
-        editId: editNote.id
+        editId: editNote.id,
+        selectedTag: editNote.tag || ''
       });
       wx.removeStorageSync('editNote');
       return;
@@ -27,10 +30,18 @@ Page({
     if (draft) {
       this.setData({
         content: draft.content || '',
-        images: draft.images || []
+        images: draft.images || [],
+        selectedTag: draft.tag || ''
       });
       wx.removeStorageSync('draft');
     }
+  },
+
+  selectTag(e) {
+    const tag = e.currentTarget.dataset.tag;
+    this.setData({
+      selectedTag: this.data.selectedTag === tag ? '' : tag
+    });
   },
 
   onInput(e) {
@@ -87,6 +98,7 @@ Page({
           ...notes[index],
           content: this.data.content.trim(),
           images: this.data.images,
+          tag: this.data.selectedTag,
           formattedDate: this.formatDate(Date.now())
         };
       }
@@ -96,6 +108,7 @@ Page({
         id: this.generateId(),
         content: this.data.content.trim(),
         images: this.data.images,
+        tag: this.data.selectedTag,
         createdAt: Date.now(),
         formattedDate: this.formatDate(Date.now())
       };
@@ -110,7 +123,8 @@ Page({
     // 重置表单
     this.setData({
       content: '',
-      images: []
+      images: [],
+      selectedTag: ''
     });
 
     wx.showToast({ title: '保存成功', icon: 'success' });
@@ -119,10 +133,11 @@ Page({
 
   onUnload() {
     // 自动保存草稿
-    if (this.data.content || this.data.images.length > 0) {
+    if (this.data.content || this.data.images.length > 0 || this.data.selectedTag) {
       wx.setStorageSync('draft', {
         content: this.data.content,
-        images: this.data.images
+        images: this.data.images,
+        tag: this.data.selectedTag
       });
     }
   },

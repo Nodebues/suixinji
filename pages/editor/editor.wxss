@@ -6,6 +6,30 @@
   padding-bottom: 160rpx;
 }
 
+.tag-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  margin-bottom: 24rpx;
+  padding-bottom: 24rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.tag-item {
+  padding: 12rpx 24rpx;
+  background: #f5f7fa;
+  border-radius: 32rpx;
+  font-size: 26rpx;
+  color: #666;
+  border: 2rpx solid transparent;
+}
+
+.tag-item.selected {
+  background: #e8f4ff;
+  color: #5B8FF9;
+  border-color: #5B8FF9;
+}
+
 .content-input {
   width: 100%;
   font-size: 30rpx;
