@@ -1,15 +1,15 @@
 <!-- pages/editor/editor.wxml -->
 <view class="editor-container">
   <!-- 标签选择 -->
-  <view class="tag-section">
-    <view 
-      class="tag-item {{selectedTag === item.name ? 'selected' : ''}}"
-      wx:for="{{tags}}"
-      wx:key="name"
-      bindtap="selectTag"
-      data-tag="{{item.name}}"
-    >{{item.icon}} {{item.name}}</view>
-  </view>
+  <picker mode="selector" range="{{tags}}" range-key="name" value="{{selectedTagIndex}}" bindchange="onTagChange">
+    <view class="tag-picker">
+      <text class="picker-label">标签</text>
+      <view class="picker-value">
+        <text>{{selectedTag || '选择标签'}}</text>
+        <text class="picker-arrow">▼</text>
+      </view>
+    </view>
+  </picker>
 
   <!-- 文字输入 -->
   <textarea

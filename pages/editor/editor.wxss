@@ -30,6 +30,33 @@
   box-shadow: 0 4rpx 12rpx rgba(91, 143, 249, 0.3);
 }
 
+.tag-picker {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20rpx 0;
+  margin-bottom: 16rpx;
+  border-bottom: 1rpx solid #f5f5f5;
+}
+
+.picker-label {
+  font-size: 28rpx;
+  color: #999;
+}
+
+.picker-value {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  font-size: 28rpx;
+  color: #333;
+}
+
+.picker-arrow {
+  font-size: 20rpx;
+  color: #ccc;
+}
+
 .content-input {
   width: 100%;
   font-size: 30rpx;

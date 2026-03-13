@@ -53,6 +53,15 @@ Page({
     });
   },
 
+  onTagChange(e) {
+    const index = e.detail.value;
+    const tag = this.data.tags[index];
+    this.setData({
+      selectedTag: tag ? tag.name : '',
+      selectedTagIndex: index
+    });
+  },
+
   onInput(e) {
     this.setData({ content: e.detail.value });
   },
