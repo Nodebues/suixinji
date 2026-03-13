@@ -8,6 +8,7 @@ Page({
     translateX: 0,
     startX: 0,
     selectedFilter: '',
+    selectedFilterIndex: 0,
     filterTags: [
       { name: '生活', icon: '🏠' },
       { name: '恋爱', icon: '💕' },
@@ -48,9 +49,11 @@ Page({
   },
 
   onFilterChange(e) {
-    const tag = e.currentTarget.dataset.tag;
+    const index = e.detail.value;
+    const tag = index === 0 ? '' : this.data.filterTags[index - 1].name;
     this.setData({
       selectedFilter: tag,
+      selectedFilterIndex: index,
       filteredNotes: this.filterNotes(this.data.notes, tag)
     });
   },

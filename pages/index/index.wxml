@@ -8,22 +8,12 @@
   </view>
 
   <!-- 标签筛选 -->
-  <view class="filter-section">
-    <scroll-view class="filter-scroll" scroll-x>
-      <view 
-        class="filter-tag {{selectedFilter === '' ? 'active' : ''}}"
-        bindtap="onFilterChange"
-        data-tag=""
-      >全部</view>
-      <view 
-        class="filter-tag {{selectedFilter === item.name ? 'active' : ''}}"
-        wx:for="{{filterTags}}"
-        wx:key="name"
-        bindtap="onFilterChange"
-        data-tag="{{item.name}}"
-      >{{item.icon}} {{item.name}}</view>
-    </scroll-view>
-  </view>
+  <picker mode="selector" range="{{filterTags}}" range-key="name" value="{{selectedFilterIndex}}" bindchange="onFilterChange">
+    <view class="filter-picker">
+      <text>{{selectedFilter ? selectedFilter : '全部'}}</text>
+      <text class="filter-arrow">▼</text>
+    </view>
+  </picker>
 
   <!-- 笔记列表 -->
   <block wx:if="{{filteredNotes.length > 0}}">

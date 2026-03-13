@@ -25,27 +25,21 @@
 }
 
 /* 标签筛选 */
-.filter-section {
-  margin-bottom: 24rpx;
-}
-
-.filter-scroll {
-  white-space: nowrap;
-}
-
-.filter-tag {
-  display: inline-block;
-  padding: 12rpx 24rpx;
+.filter-picker {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   background: #f5f7fa;
-  border-radius: 32rpx;
-  font-size: 24rpx;
-  color: #666;
-  margin-right: 16rpx;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 24rpx;
+  font-size: 28rpx;
+  color: #333;
 }
 
-.filter-tag.active {
-  background: linear-gradient(135deg, #5B8FF9 0%, #7BA8F7 100%);
-  color: #fff;
+.filter-arrow {
+  font-size: 20rpx;
+  color: #ccc;
 }
 
 .note-list {
